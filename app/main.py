@@ -1,18 +1,20 @@
 import sys
-import click_event
+import time
+import configparser
 
 class Main:
 
-    HOME_DIR_PATH = "/home/ec2-user/solutions/PointIncame/"
+    config = configparser.ConfigParser()
+    config.read('../conf/config.ini', encoding='utf-8')
+
+    HOME_DIR_PATH = config['DEFAULT']['HomeDir']
     ORIGIN_URL = "https://pointi.jp/"
     CONFIG_PATH = ""
-    MY_MODULE_PATH = HOME_DIR_PATH + "app/myModule"
+    MY_MODULE_PATH = config['DEFAULT']['ModulePath']
     CONFIG_PATH = HOME_DIR_PATH + "conf/"
     TARGET_USER = ""
     USER_WORK_FILE_PATH = ""
     DIFFUSION_TWEET_PATH = ""
-    EMAIL_ADDRESS = "kchobimmcl@yahoo.co.jp"
-    PASSWORD = "07120908"
 
     def __init__(self):
         print(self.MY_MODULE_PATH)
@@ -39,67 +41,80 @@ class Main:
 
         # 設定ファイルを読み込む
         appconfig_path = self.CONFIG_PATH + "appconfig.xml"
-        appconfig = read_config.ReadConfig(appconfig_path)
+        read_appconfig = read_config.ReadConfig(appconfig_path)
         webconfig_path = self.CONFIG_PATH + "webconfig.xml"
         read_webconfig = read_config.ReadConfig(webconfig_path)
         
         read_webconfig.set_config()
         self.webconfig = read_webconfig.get_config()
+        read_appconfig.set_config()
+        self.appconfig = read_appconfig.get_config()
+        self.email_address = self.appconfig["ADDRESS"] 
+        self.password = self.appconfig["PASSWORD"]
+
+        print(f"init::HOME_DIR {self.HOME_DIR_PATH}")
+        print(f"init::MY_MODULE_PATH {self.MY_MODULE_PATH}")
+        print(f"init::self.email_address {self.email_address}")
+        print(f"init::self.password {self.password}")
 
     #
     # 毎日クリックするだけの処理を行う（ショッピング）
     #
     def one_click_event_in_shopping(self):
+        try:
+            print("Main::one_click_event_in_shopping 毎日クリックするだけの処理を行う（ショッピング）")
+            url = self.main_html.create_url("shopping")
+            print(f"Main::one_click_event_in_shopping url: {url}")
+            self.driver.get(url)
+            selenium_elm = self.selenium_element(self.driver)
 
-        print("Main::one_click_event_in_shopping 毎日クリックするだけの処理を行う（ショッピング）")
-        url = self.main_html.create_url("shopping")
-        print(f"Main::one_click_event_in_shopping url: {url}")
-        self.driver.get(url)
-        selenium_elm = self.selenium_element(self.driver)
+            # クリックする広告のフレームを取得
+            btns = selenium_elm.get_elements_by_xpath('//li[@class="clickpt_ad_box"]//a[@class="go_btn "]')
 
-        # クリックする広告のフレームを取得
-        btns = selenium_elm.get_elements_by_xpath('//li[@class="clickpt_ad_box"]//a[@class="go_btn "]')
+            # クリック数
+            count = 0
 
-        # クリック数
-        count = 0
+            # クリックする項目を列挙
+            for btn in btns:
+                # クリックする
+                # 新規ページを開いちゃうから、うまくいかないかも
+                btn.click()
+                count += 1
 
-        # クリックする項目を列挙
-        for btn in btns:
-            # クリックする
-            # 新規ページを開いちゃうから、うまくいかないかも
-            btn.click()
-            count += 1
-
-        self.driver.save_screenshot("obj/debug/shopping.png")
-        
-        print(f"Main::one_click_event_in_shopping count: {count}")
+            self.driver.save_screenshot("obj/debug/shopping.png")
+            
+            print(f"Main::one_click_event_in_shopping count: {count}")
+        except Exception as e:
+            print(e)
         return
     #
     # 毎日クリックするだけの処理を行う
     #
     def one_click_event_in_daily(self):
-        print("Main::one_click_event_in_daily 毎日クリックするだけの処理を行う")
-        url = self.main_html.create_url("daily.php")
-        print(f"Main::one_click_event_in_daily url: {url}")
-        self.driver.get(url)
-        selenium_elm = self.selenium_element(self.driver)
+        try:
+            print("Main::one_click_event_in_daily 毎日クリックするだけの処理を行う")
+            url = self.main_html.create_url("daily.php")
+            print(f"Main::one_click_event_in_daily url: {url}")
+            self.driver.get(url)
+            selenium_elm = self.selenium_element(self.driver)
 
-        # クリックする広告のフレームを取得
-        btns = selenium_elm.get_elements_by_xpath('//div[@class="click_btn"]')
-        
-        # クリック数
-        count = 0
+            # クリックする広告のフレームを取得
+            btns = selenium_elm.get_elements_by_xpath('//div[@class="go_btn"]')
+            
+            # クリック数
+            count = 0
 
-        # クリックする項目を列挙
-        for btn in btns:
-            # クリックする
-            # 新規ページを開いちゃうから、うまくいかないかも
-            btn.click()
-            count += 1
-        
-        self.driver.save_screenshot("obj/debug/daily.png")
-        print(f"Main::one_click_event_in_daily count: {count}")
-
+            # クリックする項目を列挙
+            for btn in btns:
+                # クリックする
+                # 新規ページを開いちゃうから、うまくいかないかも
+                btn.click()
+                count += 1
+            
+            self.driver.save_screenshot("obj/debug/daily.png")
+            print(f"Main::one_click_event_in_daily count: {count}")
+        except Exception as e:
+            print(e)
         return
     #
     # 毎日クリックするだけの処理を行う
@@ -126,8 +141,8 @@ class Main:
         ad.close(self.driver)
 
         # ログイン 
-        email_address = self.EMAIL_ADDRESS
-        password = self.PASSWORD
+        email_address = self.email_address
+        password = self.password
         result = login.login(self.driver, email_address, password)
 
         if result == False:
@@ -143,20 +158,27 @@ class Main:
         return
 
     def main(self):
-        self.driver = self.selenium_driver().get_driver()
+        try:
+            self.driver = self.selenium_driver().get_driver()
 
-        self.login()
+            self.login()
 
-        # クリックするだけの処理を行う
-        self.one_click_event()
+            # クリックするだけの処理を行う
+            self.one_click_event()
 
-        # マガジンを読んでスタンプを貯める
-        magazine = self.magazine_read(self.webconfig["MAGAZINE"])
-        magazine.read_all_magazine(self.driver)
-
+            # マガジンを読んでスタンプを貯める
+            magazine = self.magazine_read(self.webconfig["MAGAZINE"])
+            magazine.read_all_magazine(self.driver)
+        except Exception as e:
+            print(e)
         return
 
 if __name__ == "__main__":
+    time_start = time.time()
     print("start program")
     start = Main()
     start.main()
+    print("finish program")
+    time_end = time.time()
+    print(f"===> {time_end - time_start}")
+    sys.exit()

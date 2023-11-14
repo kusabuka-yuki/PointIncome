@@ -5,7 +5,7 @@ import re
 class MagazineRead:
     
     DISTANCE = 0
-    MAX_ROOP_COUNT = 10000
+    MAX_ROOP_COUNT = 1000
 
     #
     # 初期化
@@ -55,11 +55,11 @@ class MagazineRead:
     #
     # 次へをクリックする
     #
-    def get_magazine_paths_in_colm(self, driver, col_path):
-        roop_count = 0
+    def get_magazine_paths_in_colm(self, driver, col_path, current_roop_count = 0):
         max_roop_count = self.MAX_ROOP_COUNT
         magazine_path = []
         path = re.sub("\?.*", "", col_path)
+        roop_count = current_roop_count
 
         # 記事のリンクを取得する
         se = seleniumElement(driver)
@@ -68,26 +68,29 @@ class MagazineRead:
         for link_elm in link_elms:
             # 記事一覧を列挙
 
-            if len(magazine_path) >= max_roop_count:
-                break
+            print(f"roop_count: {roop_count}")
+            if roop_count >= max_roop_count:
+                # break
+                return magazine_path
 
+            # 既読の記事が出現した時点で終了
+            if self.is_readed(se, link_elm):
+                return magazine_path
+            magazine_path.append(path + link_elm.get_dom_attribute("href"))
             roop_count = roop_count + 1
 
-            # 既読の記事の場合は飛ばす
-            # とりあえず、後で実装する
-            if self.is_readed(se, link_elm):
-                continue
-            magazine_path.append(path + link_elm.get_dom_attribute("href"))
-
-        if len(magazine_path) >= max_roop_count:
-            return magazine_path
+        print(f"===get_magazine_paths_in_colm=== magazine_path: {magazine_path} / len(magazine_path): {len(magazine_path)}")
+        # if len(magazine_path) >= max_roop_count:
+        #     return magazine_path
         
         # 次へボタンがあるかを確認する
         next_btn = se.get_elements_by_xpath('//a[@class="next "]')
         
         if len(next_btn) > 0:
+            print(f"===get_magazine_paths_in_colm=== 次のページへ magazine_path: {magazine_path}")
             next_btn[0].click()
-            magazine_path = magazine_path + self.get_magazine_paths_in_colm(driver, path)
+            magazine_path = magazine_path + self.get_magazine_paths_in_colm(driver, path, roop_count)
+            print(f"===get_magazine_paths_in_colm=== 次の記事へ magazine_path: {magazine_path}")
         
         return magazine_path
 
@@ -105,13 +108,14 @@ class MagazineRead:
             print(f"MagazineRead::get_magazine_path path: {path}")
             # 記事一覧へ遷移
             driver.get(path)
-            tmp_magazine_paths = self.get_magazine_paths_in_colm(driver, path)
+            magazine_paths_count = len(magazine_paths)
+            tmp_magazine_paths = self.get_magazine_paths_in_colm(driver, path, magazine_paths_count)
             magazine_paths = magazine_paths + tmp_magazine_paths
 
             if len(tmp_magazine_paths) >= max_roop_count:
-                break
+                return magazine_paths
 
-        print(f"MagazineRead::get_magazine_path magazine_paths: {magazine_paths}")
+        print(f"MagazineRead::get_magazine_path magazine_paths: {magazine_paths} / magazine_paths_counts: {len(magazine_paths)}")
         return magazine_paths
     
     #
@@ -131,12 +135,12 @@ class MagazineRead:
     def read_magazine(self, driver, magazine_paths):
         stamp_get_count = 0
         roop_count = 0
-        max_roop_count = self.MAX_ROOP_COUNT
+        # max_roop_count = self.MAX_ROOP_COUNT
         for path in magazine_paths:
             print(f"MagazineRead::read_magazine path: {path}")
 
-            if roop_count >= max_roop_count:
-                break
+            # if roop_count >= max_roop_count:
+            #     break
 
             # 記事に遷移する
             driver.get(path)
@@ -148,7 +152,7 @@ class MagazineRead:
             if len(stamp) > 0:
                 stamp_get_count = stamp_get_count + 1
         
-            time.sleep(self.DISTANCE)
+            # time.sleep(self.DISTANCE)
             roop_count = roop_count + 1
         
         print(f"スタンプを{stamp_get_count}個ゲット！！")
