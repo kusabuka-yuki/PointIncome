@@ -1,6 +1,6 @@
-from point_income_api import base
-from my_html.html_base import HtmlBase
-from selenium_driver.selenium_element import seleniumElement
+from myModule.point_income_api import base
+from myModule.my_html.html_base import HtmlBase
+from myModule.selenium_driver.selenium_element import seleniumElement
 
 class Login(base.Base):
     ORIGIN_URL = "https://pointi.jp/"

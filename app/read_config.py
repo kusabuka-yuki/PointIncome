@@ -1,6 +1,6 @@
 import glob
 from enum import Enum
-from my_file.file_base import FileBase
+from myModule.my_file.file_base import FileBase
 
 class ReadConfig:
     # 初期化処理

@@ -1,6 +1,15 @@
 import sys
 import time
 import configparser
+from myModule.my_file.file_base import FileBase
+from myModule.my_html.html_base import HtmlBase
+from myModule.selenium_driver.driver import seleniumDriver
+from myModule.selenium_driver.selenium_element import seleniumElement
+from myModule.point_income_api.login import Login
+from myModule.point_income_api.ad import Ad
+import magazine_read
+import read_config
+
 
 class Main:
 
@@ -20,15 +29,6 @@ class Main:
         print(self.MY_MODULE_PATH)
         sys.path.append(self.MY_MODULE_PATH)
 
-        from my_file.file_base import FileBase
-        from my_html.html_base import HtmlBase
-        from selenium_driver.driver import seleniumDriver
-        from selenium_driver.selenium_element import seleniumElement
-        from point_income_api.login import Login
-        from point_income_api.ad import Ad
-        import magazine_read
-        import read_config
-        
         self.file_base = FileBase
         self.html_base = HtmlBase
         self.main_html = self.html_base(self.ORIGIN_URL)

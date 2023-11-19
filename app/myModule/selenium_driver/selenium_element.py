@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium_driver.driver import seleniumDriver
+from myModule.selenium_driver.driver import seleniumDriver
 
 class seleniumElement(seleniumDriver):
     #

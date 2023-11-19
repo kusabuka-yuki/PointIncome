@@ -1,4 +1,4 @@
-from selenium_driver.selenium_element import seleniumElement
+from myModule.selenium_driver.selenium_element import seleniumElement
 import time
 import re
 

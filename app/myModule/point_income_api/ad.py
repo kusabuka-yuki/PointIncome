@@ -1,8 +1,8 @@
 #
 # 広告クラス
 #
-from point_income_api import base
-from selenium_driver.selenium_element import seleniumElement
+from myModule.point_income_api import base
+from myModule.selenium_driver.selenium_element import seleniumElement
 
 class Ad(base.Base):
     def __init__(self):
