@@ -10,7 +10,6 @@ from myModule.point_income_api.ad import Ad
 import magazine_read
 import read_config
 
-
 class Main:
 
     config = configparser.ConfigParser()
@@ -18,7 +17,6 @@ class Main:
 
     HOME_DIR_PATH = config['DEFAULT']['HomeDir']
     ORIGIN_URL = "https://pointi.jp/"
-    CONFIG_PATH = ""
     MY_MODULE_PATH = config['DEFAULT']['ModulePath']
     CONFIG_PATH = HOME_DIR_PATH + "conf/"
     TARGET_USER = ""
@@ -32,30 +30,44 @@ class Main:
         self.file_base = FileBase
         self.html_base = HtmlBase
         self.main_html = self.html_base(self.ORIGIN_URL)
-        self.selenium_driver = seleniumDriver
+        self.selenium_driver = seleniumDriver(None, self.config['DEFAULT']['ChromeDriver'])
         self.selenium_element = seleniumElement
         self.point_income_api_login = Login
         self.point_income_api_ad = Ad
         self.magazine_read = magazine_read.MagazineRead
         self.read_config = read_config.ReadConfig
 
-        # 設定ファイルを読み込む
-        appconfig_path = self.CONFIG_PATH + "appconfig.xml"
-        read_appconfig = read_config.ReadConfig(appconfig_path)
-        webconfig_path = self.CONFIG_PATH + "webconfig.xml"
-        read_webconfig = read_config.ReadConfig(webconfig_path)
-        
-        read_webconfig.set_config()
-        self.webconfig = read_webconfig.get_config()
-        read_appconfig.set_config()
-        self.appconfig = read_appconfig.get_config()
-        self.email_address = self.appconfig["ADDRESS"] 
-        self.password = self.appconfig["PASSWORD"]
+        self.magazine_path = self.config['DEFAULT']['MagazinPath']
+
+        self.set_user_infos()
 
         print(f"init::HOME_DIR {self.HOME_DIR_PATH}")
         print(f"init::MY_MODULE_PATH {self.MY_MODULE_PATH}")
         print(f"init::self.email_address {self.email_address}")
         print(f"init::self.password {self.password}")
+
+    # ユーザー情報取得
+    def set_user_infos(self):
+        try:
+            
+            args = sys.argv
+            email_address = ""
+            password = ""
+            
+            if(len(args) > 2):
+                if(len(args[1]) > 0 and len(args[2]) > 0):
+                    email_address = args[1]
+                    password = args[2]
+
+            if(len(email_address) <= 0 or len(password) <= 0):
+                raise Exception("ユーザー情報を入力してください")
+            
+            self.email_address = email_address
+            self.password = password
+
+        except Exception as e:
+            print(f"{e} ")
+        return
 
     #
     # 毎日クリックするだけの処理を行う（ショッピング）
@@ -81,8 +93,6 @@ class Main:
                 btn.click()
                 count += 1
 
-            self.driver.save_screenshot("obj/debug/shopping.png")
-            
             print(f"Main::one_click_event_in_shopping count: {count}")
         except Exception as e:
             print(e)
@@ -111,7 +121,6 @@ class Main:
                 btn.click()
                 count += 1
             
-            self.driver.save_screenshot("obj/debug/daily.png")
             print(f"Main::one_click_event_in_daily count: {count}")
         except Exception as e:
             print(e)
@@ -159,7 +168,7 @@ class Main:
 
     def main(self):
         try:
-            self.driver = self.selenium_driver().get_driver()
+            self.driver = self.selenium_driver.get_driver()
 
             self.login()
 
@@ -167,7 +176,7 @@ class Main:
             self.one_click_event()
 
             # マガジンを読んでスタンプを貯める
-            magazine = self.magazine_read(self.webconfig["MAGAZINE"])
+            magazine = self.magazine_read(self.magazine_path)
             magazine.read_all_magazine(self.driver)
         except Exception as e:
             print(e)

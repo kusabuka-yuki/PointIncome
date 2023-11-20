@@ -27,8 +27,6 @@ class ClickEvent:
             btn.click()
             count += 1
 
-        self.driver.save_screenshot("obj/debug/shopping.png")
-        
         print(f"Main::one_click_event_in_shopping count: {count}")
         return
     #
@@ -54,7 +52,6 @@ class ClickEvent:
             btn.click()
             count += 1
         
-        self.driver.save_screenshot("obj/debug/daily.png")
         print(f"Main::one_click_event_in_daily count: {count}")
 
         return

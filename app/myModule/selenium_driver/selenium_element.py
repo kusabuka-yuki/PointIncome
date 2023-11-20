@@ -12,15 +12,11 @@ class seleniumElement(seleniumDriver):
 
         # Webドライバーの取得
         self.driver = super().get_driver()
-        # print(f"seleniumElement::__init__ self.driver -> {self.driver}")
 
     #
     # XPATHからエレメントを取得
     #
     def get_elements_by_xpath(self, path):
-        # print(f"seleniumElement::get_elements_by_xpath self.driver -> {self.driver}")
-        self.driver.save_screenshot("obj/debug/1.png")
-
         return self.driver.find_elements(By.XPATH, path)
 
     #
@@ -28,7 +24,6 @@ class seleniumElement(seleniumDriver):
     #
     def get_element_by_xpath(self, path, index = 0):
         elements = self.get_elements_by_xpath(path)
-        # print(f"seleniumElement::get_element_by_xpath elements -> {elements}")
         if len(elements) > 0:
             return elements[index]
         else:

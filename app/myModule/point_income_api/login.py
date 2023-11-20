@@ -26,12 +26,7 @@ class Login(base.Base):
         password_elm = login_driver.get_element_by_xpath('//input[@name="password"]')
         password_elm.send_keys(password)
 
-        driver.save_screenshot("obj/debug/login_inputed.png")
-
         submit.click()
-
-        driver.save_screenshot("obj/debug/logined.png")
-
         
         if len(login_driver.get_elements_by_xpath('//a[@href="/logout.php"]')) <= 0:
             print("login failed")

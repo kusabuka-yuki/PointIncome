@@ -5,7 +5,7 @@ import re
 class MagazineRead:
     
     DISTANCE = 0
-    MAX_ROOP_COUNT = 1000
+    MAX_ROOP_COUNT = 300
 
     #
     # 初期化
