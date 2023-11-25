@@ -2,10 +2,12 @@ from myModule.selenium_driver.selenium_element import seleniumElement
 import time
 import re
 
+global logger
+
 class MagazineRead:
     
     DISTANCE = 0
-    MAX_ROOP_COUNT = 300
+    MAX_ROOP_COUNT = 50
 
     #
     # 初期化
@@ -49,7 +51,7 @@ class MagazineRead:
         for col_link in col_links:
             magazine_index_paths.append(self.magazine_top_path + col_link.get_dom_attribute("href"))
         
-        print(f"MagazineRead::set_magazine_index_path magazine_index_paths: {magazine_index_paths}")
+        self.logger.debug(f"MagazineRead::set_magazine_index_path magazine_index_paths: {magazine_index_paths}")
         return magazine_index_paths
     
     #
@@ -68,7 +70,7 @@ class MagazineRead:
         for link_elm in link_elms:
             # 記事一覧を列挙
 
-            print(f"roop_count: {roop_count}")
+            self.logger.debug(f"roop_count: {roop_count}")
             if roop_count >= max_roop_count:
                 # break
                 return magazine_path
@@ -79,7 +81,7 @@ class MagazineRead:
             magazine_path.append(path + link_elm.get_dom_attribute("href"))
             roop_count = roop_count + 1
 
-        print(f"===get_magazine_paths_in_colm=== magazine_path: {magazine_path} / len(magazine_path): {len(magazine_path)}")
+        self.logger.debug(f"===get_magazine_paths_in_colm=== magazine_path: {magazine_path} / len(magazine_path): {len(magazine_path)}")
         # if len(magazine_path) >= max_roop_count:
         #     return magazine_path
         
@@ -87,10 +89,10 @@ class MagazineRead:
         next_btn = se.get_elements_by_xpath('//a[@class="next "]')
         
         if len(next_btn) > 0:
-            print(f"===get_magazine_paths_in_colm=== 次のページへ magazine_path: {magazine_path}")
+            self.logger.debug(f"===get_magazine_paths_in_colm=== 次のページへ magazine_path: {magazine_path}")
             next_btn[0].click()
             magazine_path = magazine_path + self.get_magazine_paths_in_colm(driver, path, roop_count)
-            print(f"===get_magazine_paths_in_colm=== 次の記事へ magazine_path: {magazine_path}")
+            self.logger.debug(f"===get_magazine_paths_in_colm=== 次の記事へ magazine_path: {magazine_path}")
         
         return magazine_path
 
@@ -105,7 +107,7 @@ class MagazineRead:
         magazine_paths = []
         for path in magazine_index_paths:
             # カラム一覧を列挙
-            print(f"MagazineRead::get_magazine_path path: {path}")
+            self.logger.debug(f"MagazineRead::get_magazine_path path: {path}")
             # 記事一覧へ遷移
             driver.get(path)
             magazine_paths_count = len(magazine_paths)
@@ -115,7 +117,7 @@ class MagazineRead:
             if len(tmp_magazine_paths) >= max_roop_count:
                 return magazine_paths
 
-        print(f"MagazineRead::get_magazine_path magazine_paths: {magazine_paths} / magazine_paths_counts: {len(magazine_paths)}")
+        self.logger.debug(f"MagazineRead::get_magazine_path magazine_paths: {magazine_paths} / magazine_paths_counts: {len(magazine_paths)}")
         return magazine_paths
     
     #
@@ -137,7 +139,7 @@ class MagazineRead:
         roop_count = 0
         # max_roop_count = self.MAX_ROOP_COUNT
         for path in magazine_paths:
-            print(f"MagazineRead::read_magazine path: {path}")
+            self.logger.debug(f"MagazineRead::read_magazine path: {path}")
 
             # if roop_count >= max_roop_count:
             #     break
@@ -155,7 +157,7 @@ class MagazineRead:
             # time.sleep(self.DISTANCE)
             roop_count = roop_count + 1
         
-        print(f"スタンプを{stamp_get_count}個ゲット！！")
+        self.logger.debug(f"スタンプを{stamp_get_count}個ゲット！！")
         return
 
     #
@@ -163,7 +165,7 @@ class MagazineRead:
     #
     def read_all_magazine(self, driver):
 
-        print("MagazineRead::get_magazine_links===>")
+        self.logger.debug("MagazineRead::get_magazine_links===>")
 
         # マガジンページにアクセス
         driver.get(self.magazine_top_path)
@@ -174,10 +176,10 @@ class MagazineRead:
         # 記事一覧から全ての記事のリンクを取得 -> 配列
         magazine_paths = self.get_magazine_path(driver, magazine_index_paths)
 
-        print(f"count: {len(magazine_paths)}")
+        self.logger.debug(f"count: {len(magazine_paths)}")
         # 全ての記事にアクセスしてページをめくり、スタンプゲット
         self.read_magazine(driver, magazine_paths)
         
         # 終了
-        print("MagazineRead::get_magazine_links<===")
+        self.logger.debug("MagazineRead::get_magazine_links<===")
         return

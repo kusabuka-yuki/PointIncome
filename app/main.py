@@ -7,14 +7,16 @@ from myModule.selenium_driver.driver import seleniumDriver
 from myModule.selenium_driver.selenium_element import seleniumElement
 from myModule.point_income_api.login import Login
 from myModule.point_income_api.ad import Ad
+from myModule.logger.logger import Logger
 import magazine_read
 import read_config
+import logging
 
 class Main:
 
     config = configparser.ConfigParser()
     config.read('../conf/config.ini', encoding='utf-8')
-
+    
     HOME_DIR_PATH = config['DEFAULT']['HomeDir']
     ORIGIN_URL = "https://pointi.jp/"
     MY_MODULE_PATH = config['DEFAULT']['ModulePath']
@@ -24,7 +26,6 @@ class Main:
     DIFFUSION_TWEET_PATH = ""
 
     def __init__(self):
-        print(self.MY_MODULE_PATH)
         sys.path.append(self.MY_MODULE_PATH)
 
         self.file_base = FileBase
@@ -37,14 +38,21 @@ class Main:
         self.magazine_read = magazine_read.MagazineRead
         self.read_config = read_config.ReadConfig
 
+        logFormat = "%(asctime)s - %(levelname)s:%(name)s - %(message)s"
+        logFile = self.config['LOGGING']['LogFile']
+        loggerInstance = Logger()
+        loggerInstance.create_logger(__name__, logging.DEBUG, logFormat, logFile)
+        global logger
+        logger = loggerInstance.logger
+
         self.magazine_path = self.config['DEFAULT']['MagazinPath']
 
         self.set_user_infos()
 
-        print(f"init::HOME_DIR {self.HOME_DIR_PATH}")
-        print(f"init::MY_MODULE_PATH {self.MY_MODULE_PATH}")
-        print(f"init::self.email_address {self.email_address}")
-        print(f"init::self.password {self.password}")
+        logger.debug(f"init::HOME_DIR {self.HOME_DIR_PATH}")
+        logger.debug(f"init::MY_MODULE_PATH {self.MY_MODULE_PATH}")
+        logger.debug(f"init::self.email_address {self.email_address}")
+        logger.debug(f"init::self.password {self.password}")
 
     # ユーザー情報取得
     def set_user_infos(self):
@@ -74,9 +82,9 @@ class Main:
     #
     def one_click_event_in_shopping(self):
         try:
-            print("Main::one_click_event_in_shopping 毎日クリックするだけの処理を行う（ショッピング）")
+            logger.debug("Main::one_click_event_in_shopping 毎日クリックするだけの処理を行う（ショッピング）")
             url = self.main_html.create_url("shopping")
-            print(f"Main::one_click_event_in_shopping url: {url}")
+            logger.debug(f"Main::one_click_event_in_shopping url: {url}")
             self.driver.get(url)
             selenium_elm = self.selenium_element(self.driver)
 
@@ -93,7 +101,7 @@ class Main:
                 btn.click()
                 count += 1
 
-            print(f"Main::one_click_event_in_shopping count: {count}")
+            logger.debug(f"Main::one_click_event_in_shopping count: {count}")
         except Exception as e:
             print(e)
         return
@@ -102,9 +110,9 @@ class Main:
     #
     def one_click_event_in_daily(self):
         try:
-            print("Main::one_click_event_in_daily 毎日クリックするだけの処理を行う")
+            logger.debug("Main::one_click_event_in_daily 毎日クリックするだけの処理を行う")
             url = self.main_html.create_url("daily.php")
-            print(f"Main::one_click_event_in_daily url: {url}")
+            logger.debug(f"Main::one_click_event_in_daily url: {url}")
             self.driver.get(url)
             selenium_elm = self.selenium_element(self.driver)
 
@@ -121,7 +129,7 @@ class Main:
                 btn.click()
                 count += 1
             
-            print(f"Main::one_click_event_in_daily count: {count}")
+            logger.debug(f"Main::one_click_event_in_daily count: {count}")
         except Exception as e:
             print(e)
         return
@@ -156,7 +164,7 @@ class Main:
 
         if result == False:
             # 正常にログインできなかった場合はプログラムを終了する
-            print("progam has bat status.")
+            logger.debug("progam has bat status.")
             return
         
         print("logined")
@@ -177,6 +185,7 @@ class Main:
 
             # マガジンを読んでスタンプを貯める
             magazine = self.magazine_read(self.magazine_path)
+            magazine.logger = logger
             magazine.read_all_magazine(self.driver)
         except Exception as e:
             print(e)
@@ -186,6 +195,7 @@ if __name__ == "__main__":
     time_start = time.time()
     print("start program")
     start = Main()
+    logger.debug("aaaa")
     start.main()
     print("finish program")
     time_end = time.time()
