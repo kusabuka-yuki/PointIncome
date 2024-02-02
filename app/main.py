@@ -195,7 +195,6 @@ if __name__ == "__main__":
     time_start = time.time()
     print("start program")
     start = Main()
-    logger.debug("aaaa")
     start.main()
     print("finish program")
     time_end = time.time()
